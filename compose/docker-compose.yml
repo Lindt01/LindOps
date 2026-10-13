@@ -1,0 +1,48 @@
+# LindOps - Phase 1: local services with Docker Compose
+# Start:  docker compose up -d
+# Stop:   docker compose down
+#
+# TODO (Phase 2): pin image versions instead of "latest"
+
+name: lindops
+
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:2
+    container_name: uptime-kuma
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      DOMAIN: "http://localhost:8080"
+      SIGNUPS_ALLOWED: "${VAULTWARDEN_SIGNUPS_ALLOWED}"
+      ADMIN_TOKEN: "${VAULTWARDEN_ADMIN_TOKEN}"
+    volumes:
+      - vaultwarden-data:/data
+
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    restart: unless-stopped
+    ports:
+      - "3000:3000"   # web UI
+      - "2222:22"     # git over SSH
+    environment:
+      USER_UID: "1000"
+      USER_GID: "1000"
+    volumes:
+      - gitea-data:/data
+
+volumes:
+  uptime-kuma-data:
+  vaultwarden-data:
+  gitea-data:
