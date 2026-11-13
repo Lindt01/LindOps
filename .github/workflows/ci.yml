@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  compose-validate:
+    name: Compose-Datei prüfen
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Docker-Compose-Version anzeigen
+        run: docker compose version
+
+      - name: Beispiel-Env bereitstellen
+        run: cp compose/.env.example compose/.env
+
+      - name: Compose-Datei validieren
+        run: docker compose -f compose/docker-compose.yml config --quiet
