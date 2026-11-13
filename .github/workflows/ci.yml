@@ -22,3 +22,22 @@ jobs:
 
       - name: Compose-Datei validieren
         run: docker compose -f compose/docker-compose.yml config --quiet
+
+  compose-rules:
+    name: Compose-Regeln (Unit-Tests)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Test-Abhängigkeiten installieren
+        run: pip install -r tests/requirements.txt
+
+      - name: Tests ausführen
+        run: pytest tests -v
