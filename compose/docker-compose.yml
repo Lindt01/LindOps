@@ -8,7 +8,7 @@ name: lindops
 
 services:
   uptime-kuma:
-    image: louislam/uptime-kuma:2
+    image: louislam/uptime-kuma:2.5.11
     container_name: uptime-kuma
     restart: unless-stopped
     ports:
@@ -17,7 +17,7 @@ services:
       - uptime-kuma-data:/app/data
 
   vaultwarden:
-    image: vaultwarden/server:latest
+    image: vaultwarden/server:1.37.5
     container_name: vaultwarden
     restart: unless-stopped
     ports:
@@ -30,7 +30,7 @@ services:
       - vaultwarden-data:/data
 
   gitea:
-    image: gitea/gitea:latest
+    image: gitea/gitea:28.3.0
     container_name: gitea
     restart: unless-stopped
     ports:
