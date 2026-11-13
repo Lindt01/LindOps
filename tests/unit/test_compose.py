@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-COMPOSE_FILE = Path(__file__).parent.parent / "compose" / "docker-compose.yml"
+COMPOSE_FILE = Path(__file__).parents[2] / "compose" / "docker-compose.yml"
 
 
 def load_services():
@@ -38,7 +38,11 @@ def test_service_has_restart_policy(name):
     """Jeder Dienst muss nach einem Absturz oder Reboot wieder hochkommen."""
     assert "restart" in SERVICES[name], f"{name}: 'restart' fehlt"
 
-
+@pytest.mark.parametrize("name", SERVICES.keys())
+def test_service_has_healthcheck(name):
+    """Jeder Dienst braucht einen Healthcheck, damit Docker weiß, ob er wirklich funktioniert."""
+    assert "healthcheck" in SERVICES[name], f"{name}: 'healthcheck' fehlt"
+    
 def test_host_ports_are_unique():
     """Zwei Dienste dürfen nicht denselben Port auf dem Host belegen."""
     seen = {}

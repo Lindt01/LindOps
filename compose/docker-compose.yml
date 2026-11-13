@@ -1,8 +1,6 @@
 # LindOps - Phase 1: local services with Docker Compose
 # Start:  docker compose up -d
 # Stop:   docker compose down
-#
-# TODO (Phase 2): pin image versions instead of "latest"
 
 name: lindops
 
@@ -15,6 +13,13 @@ services:
       - "3001:3001"
     volumes:
       - uptime-kuma-data:/app/data
+    healthcheck:
+      test: ["CMD", "/app/extra/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+      start_interval: 5s
 
   vaultwarden:
     image: vaultwarden/server:1.37.5
@@ -28,6 +33,13 @@ services:
       ADMIN_TOKEN: "${VAULTWARDEN_ADMIN_TOKEN}"
     volumes:
       - vaultwarden-data:/data
+    healthcheck:
+      test: ["CMD", "/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+      start_interval: 5s
 
   gitea:
     image: gitea/gitea:28.3.0
@@ -41,6 +53,13 @@ services:
       USER_GID: "1000"
     volumes:
       - gitea-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/api/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+      start_interval: 5s
 
 volumes:
   uptime-kuma-data:
