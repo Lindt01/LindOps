@@ -4,13 +4,13 @@
 
 A self-hosted platform run like a real DevOps/SRE team: Kubernetes, GitOps, monitoring, chaos tests & postmortems.
 
-This repo is built step by step. Right now it runs three self-hosted services with Docker Compose, guarded by a CI pipeline with unit and integration tests.
+This repo is built step by step. Right now it runs three self-hosted services (plus Postgres for Gitea) with Docker Compose, guarded by a CI pipeline with unit and integration tests.
 
 ## Services
 
 | Service | Purpose | URL |
 |---|---|---|
-| [Gitea](https://about.gitea.com/) | Self-hosted Git server | http://localhost:3000 |
+| [Gitea](https://about.gitea.com/) | Self-hosted Git server (backed by Postgres) | http://localhost:3000 |
 | [Uptime Kuma](https://github.com/louislam/uptime-kuma) | Uptime monitoring | http://localhost:3001 |
 | [Vaultwarden](https://github.com/dani-garcia/vaultwarden) | Password manager (Bitwarden-compatible) | http://localhost:8080 |
 
@@ -23,7 +23,7 @@ Requirements: Docker with Docker Compose v2.
 ```bash
 # 1. Create your local config (never committed)
 cp compose/.env.example compose/.env
-# then set a long random VAULTWARDEN_ADMIN_TOKEN in compose/.env
+# then replace every change-me in compose/.env with a long random string
 
 # 2. Start the stack and wait until every service is healthy
 docker compose -f compose/docker-compose.yml up -d --wait
@@ -53,8 +53,9 @@ pytest tests/integration -v
 | Level | What it checks |
 |---|---|
 | **Validation** | `docker compose config` accepts the compose file |
-| **Unit tests** | Every image has a fixed version (no `:latest`), every service has `restart` and a `healthcheck`, no host port is used twice |
+| **Unit tests** | Every image has a fixed version (no `:latest`), every service has `restart` and a `healthcheck`, no host port is used twice, databases don't publish ports |
 | **Integration tests** | All containers are running and `healthy`, every service answers HTTP, Gitea's `/api/healthz` reports `pass` |
+| **API + database tests** | A repo created through the Gitea API is stored in Postgres, survives a Gitea restart, and is removed from the database when deleted |
 
 ## CI pipeline
 
@@ -79,7 +80,7 @@ Fast checks run first and in parallel. The slower integration job only starts wh
 └── tests/
     ├── requirements.txt       # pinned test dependencies
     ├── unit/                  # rules for the compose file
-    └── integration/           # tests against the running stack
+    └── integration/           # tests against the running stack (services, Gitea API, Postgres)
 ```
 
 ## Roadmap
@@ -88,7 +89,7 @@ Fast checks run first and in parallel. The slower integration job only starts wh
 - [x] CI: validate the compose file
 - [x] Pinned image versions + compose rules as unit tests
 - [x] Healthchecks + integration tests in CI
-- [ ] Gitea on Postgres + API and database tests
+- [x] Gitea on Postgres + API and database tests
 - [ ] End-to-end tests with Playwright
 - [ ] Performance tests with k6 (load, stress, spike, soak)
 - [ ] Continuous deployment to dedicated homelab hardware
